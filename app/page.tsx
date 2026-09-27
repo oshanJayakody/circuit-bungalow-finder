@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 type Bungalow = {
@@ -77,10 +78,15 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto max-w-6xl p-6">
-      <h1 className="text-3xl font-bold">
-        Circuit Bungalow Finder
-      </h1>
+    <main className="mx-auto w-full max-w-6xl p-6">
+      <header className="flex items-center justify-between gap-4">
+        <h1 className="text-3xl font-bold">
+          Circuit Bungalow Finder
+        </h1>
+        <Link href="/login" className="shrink-0 rounded-lg bg-green-800 px-5 py-3 text-sm font-semibold text-white hover:bg-green-900">
+          Log in
+        </Link>
+      </header>
 
       <p className="my-3 text-gray-600">
         Find government circuit bungalows across Sri Lanka.
