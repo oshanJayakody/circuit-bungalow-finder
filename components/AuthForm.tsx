@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { isAdminUser } from "@/lib/admin";
 
 type AuthFormProps = { mode: "login" | "signup" };
 
@@ -19,35 +20,44 @@ export default function AuthForm({ mode }: AuthFormProps) {
     event.preventDefault();
     setBusy(true);
     setMessage("");
-    const result = isSignup
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
-
-    setBusy(false);
-    setIsError(Boolean(result.error));
-    if (!result.error && !isSignup) {
-      window.location.assign("/");
-      return;
+    try {
+      const result = isSignup
+        ? await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signInWithPassword({ email, password });
+      setIsError(Boolean(result.error));
+      if (!result.error && !isSignup) {
+        window.location.assign(await isAdminUser(result.data.user) ? "/admin" : "/");
+        return;
+      }
+      setMessage(result.error?.message ?? "Account created. Check your email to confirm your address.");
+    } catch (error) {
+      setIsError(true);
+      setMessage(error instanceof Error ? error.message : "Unable to sign in right now.");
+    } finally {
+      setBusy(false);
     }
-    setMessage(
-      result.error?.message ??
-        (isSignup
-          ? "Account created. Check your email to confirm your address."
-          : "You’re signed in.")
-    );
   }
 
   async function signInWith(provider: "google" | "facebook") {
     setBusy(true);
     setMessage("");
+    window.sessionStorage.setItem("admin-oauth-pending", "true");
+    try {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/` },
     });
     if (error) {
+      window.sessionStorage.removeItem("admin-oauth-pending");
       setBusy(false);
       setIsError(true);
       setMessage(error.message);
+    }
+    } catch (error) {
+      window.sessionStorage.removeItem("admin-oauth-pending");
+      setBusy(false);
+      setIsError(true);
+      setMessage(error instanceof Error ? error.message : "Unable to start sign-in.");
     }
   }
 

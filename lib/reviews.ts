@@ -14,9 +14,10 @@ export async function submitReview(
     throw new Error("Please log in first.");
   }
 
-  if (rating < 1 || rating > 5) {
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
     throw new Error("Rating must be between 1 and 5.");
   }
+  if (comment.length > 2000) throw new Error("Reviews must be 2,000 characters or fewer.");
 
   const { data, error } = await supabase
     .from("reviews")
@@ -39,7 +40,8 @@ export async function getBungalowReviews(bungalowId: string) {
     .from("reviews")
     .select("rating, comment, created_at")
     .eq("bungalow_id", bungalowId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(100);
 
   if (error) throw error;
 
