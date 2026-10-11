@@ -72,7 +72,7 @@ export default function BungalowSuggestionForm({ bungalow }: { bungalow: Editabl
     }
   }
 
-  if (!signedIn) return <div className="rounded-2xl bg-[#f3f4ee] p-5 text-sm text-[#718077]">Sign in to suggest a correction. <Link href="/login" className="font-semibold text-[#315c46] underline">Log in</Link></div>;
+  if (!signedIn) return <div className="rounded-2xl bg-[#f3f4ee] dark:bg-[#151f19] p-5 text-sm text-[#718077] dark:text-[#9db0a2]">Sign in to suggest a correction. <Link href="/login" className="font-semibold text-[#315c46] dark:text-[#7fb894] underline">Log in</Link></div>;
 
   const fields: { key: keyof typeof values; label: string; multiline?: boolean }[] = [
     { key: "name", label: "Bungalow name" },
@@ -86,9 +86,9 @@ export default function BungalowSuggestionForm({ bungalow }: { bungalow: Editabl
   ];
 
   return <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
-    <p className="text-sm leading-6 text-[#718077] sm:col-span-2">Suggest corrections to the listing. Changes will be visible after an admin approves them.</p>
-    {fields.map(({ key, label, multiline }) => <label key={key} className={`grid gap-1 text-sm font-medium ${multiline ? "sm:col-span-2" : ""}`}>{label}{multiline ? <textarea maxLength={2000} className="rounded-xl border border-[#dce3dc] p-3 font-normal" rows={4} value={values[key]} onChange={(event) => setValues((current) => ({ ...current, [key]: event.target.value }))} /> : <input maxLength={key === "booking_url" || key === "facebook_url" ? 2048 : 200} type={key === "booking_url" || key === "facebook_url" ? "url" : "text"} className="rounded-xl border border-[#dce3dc] p-3 font-normal" value={values[key]} onChange={(event) => setValues((current) => ({ ...current, [key]: event.target.value }))} />}</label>)}
-    <button disabled={saving} className="w-fit rounded-full bg-[#244f3d] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60 sm:col-span-2">{saving ? "Sending…" : "Send edit suggestion"}</button>
-    {message && <p className="text-sm text-[#52685a] sm:col-span-2" role="status">{message}</p>}
+    <p className="text-sm leading-6 text-[#718077] dark:text-[#9db0a2] sm:col-span-2">Suggest corrections to the listing. Changes will be visible after an admin approves them.</p>
+    {fields.map(({ key, label, multiline }) => <label key={key} className={`grid gap-1 text-sm font-medium ${multiline ? "sm:col-span-2" : ""}`}>{label}{multiline ? <textarea maxLength={2000} className="rounded-xl border border-[#dce3dc] dark:border-[#243830] p-3 font-normal" rows={4} value={values[key]} onChange={(event) => setValues((current) => ({ ...current, [key]: event.target.value }))} /> : <input maxLength={key === "booking_url" || key === "facebook_url" ? 2048 : 200} type={key === "booking_url" || key === "facebook_url" ? "url" : "text"} className="rounded-xl border border-[#dce3dc] dark:border-[#243830] p-3 font-normal" value={values[key]} onChange={(event) => setValues((current) => ({ ...current, [key]: event.target.value }))} />}</label>)}
+    <button disabled={saving} className="w-fit rounded-full bg-[#244f3d] dark:bg-[#3d7a5c] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60 sm:col-span-2">{saving ? "Sending…" : "Send edit suggestion"}</button>
+    {message && <p className="text-sm text-[#52685a] dark:text-[#a9bcae] sm:col-span-2" role="status">{message}</p>}
   </form>;
 }

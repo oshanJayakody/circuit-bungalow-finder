@@ -66,6 +66,6 @@ export default function ReviewForm({ bungalowId, onSubmitted }: { bungalowId: st
         {saving ? "Submitting..." : "Submit review"}
       </button>
       {message && <p role="status">{message}</p>}
-    </form> : <p className="rounded-2xl bg-[#f3f4ee] p-4 text-sm text-[#718077]">Sign in to leave a rating or review. <Link href="/login" className="font-semibold text-[#315c46] underline">Log in</Link></p>
+    </form> : <p className="rounded-2xl bg-[#f3f4ee] dark:bg-[#151f19] p-4 text-sm text-[#718077] dark:text-[#9db0a2]">Sign in to leave a rating or review. <Link href="/login" className="font-semibold text-[#315c46] dark:text-[#7fb894] underline">Log in</Link></p>
   );
 }

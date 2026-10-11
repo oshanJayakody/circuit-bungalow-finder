@@ -86,7 +86,7 @@ export default function BungalowSubmissionForm({ departments }: { departments: D
 
   const inputClass = "w-full rounded border p-3";
   return (
-    <section className="my-10 rounded-xl border bg-white p-6">
+    <section className="my-10 rounded-xl border bg-white dark:bg-[#121a15] p-6">
       <h2 className="mb-2 text-2xl font-semibold">Add a circuit bungalow</h2>
       <p className="mb-5 text-gray-600">Share a listing with the community. Submissions are reviewed before they appear in search.</p>
       <form className="grid gap-4 md:grid-cols-2" onSubmit={submit}>

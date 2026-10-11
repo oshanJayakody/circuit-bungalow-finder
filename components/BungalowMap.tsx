@@ -41,7 +41,7 @@ export default function BungalowMap({
   locations: Location[];
 }) {
   return (
-    <div className="h-[62vh] min-h-[430px] w-full overflow-hidden rounded-[26px] border border-[#e5e8df] shadow-[0_14px_44px_rgba(35,55,47,.09)] sm:h-[68vh] sm:min-h-[560px]">
+    <div className="h-[62vh] min-h-[430px] w-full overflow-hidden rounded-[26px] border border-[#e5e8df] dark:border-[#223028] shadow-[0_14px_44px_rgba(35,55,47,.09)] sm:h-[68vh] sm:min-h-[560px]">
       <MapContainer
         center={[7.8731, 80.7718]}
         zoom={7}
@@ -61,7 +61,7 @@ export default function BungalowMap({
             position={[item.latitude, item.longitude]}
           >
             <Popup>
-              <div className="min-w-40 text-[#23372f]"><strong className="text-sm">{item.name}</strong><p className="mt-1 text-xs text-[#718077]">{item.town}, {item.district}</p><Link className="mt-2 inline-block text-xs font-semibold text-[#315c46] underline" href={`/bungalows/${item.id}`}>View details</Link></div>
+              <div className="min-w-40 text-[#23372f] dark:text-[#e9f1ea]"><strong className="text-sm">{item.name}</strong><p className="mt-1 text-xs text-[#718077] dark:text-[#9db0a2]">{item.town}, {item.district}</p><Link className="mt-2 inline-block text-xs font-semibold text-[#315c46] dark:text-[#7fb894] underline" href={`/bungalows/${item.id}`}>View details</Link></div>
             </Popup>
           </Marker>
         ))}
