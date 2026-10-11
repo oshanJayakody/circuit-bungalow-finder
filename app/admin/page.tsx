@@ -22,6 +22,9 @@ type Submission = {
   facilities: string[] | null;
   image_urls: string[] | null;
   department_id: number | null;
+  rooms_count: number | null;
+  max_guests: number | null;
+  ac_type: string | null;
 };
 type EditSuggestion = {
   id: string;
@@ -58,7 +61,7 @@ export default function AdminPage() {
     }
 
     const [listingResult, suggestionResult, analyticsResult, departmentResult] = await Promise.all([
-      supabase.from("bungalows").select("id, name, district, town, status, submitted_by, created_at, description, address, contact_phone, booking_url, facilities, image_urls, department_id").eq("status", "pending").order("created_at", { ascending: false }).limit(100),
+      supabase.from("bungalows").select("id, name, district, town, status, submitted_by, created_at, description, address, contact_phone, booking_url, facilities, image_urls, department_id, rooms_count, max_guests, ac_type").eq("status", "pending").order("created_at", { ascending: false }).limit(100),
       supabase.from("bungalow_suggestions").select("id, bungalow_id, user_id, proposed_changes, status, created_at").eq("status", "pending").order("created_at", { ascending: false }).limit(100),
       supabase.rpc("get_admin_analytics"),
       supabase.from("departments").select("id, name"),
@@ -170,6 +173,13 @@ export default function AdminPage() {
                       </dl>
                       {item.facilities && item.facilities.length > 0 && (
                         <div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wide text-[#8a9b8b] dark:text-[#8fa393]">Facilities</p><div className="mt-2 flex flex-wrap gap-2">{item.facilities.map((f) => <span key={f} className="rounded-full bg-white dark:bg-[#121a15] border border-[#e8eae2] dark:border-[#223028] px-3 py-1.5 text-xs font-medium">{f}</span>)}</div></div>
+                      )}
+                      {(item.rooms_count != null || item.max_guests != null || item.ac_type) && (
+                        <div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wide text-[#8a9b8b] dark:text-[#8fa393]">Property details</p><div className="mt-2 flex flex-wrap gap-2">
+                          {item.rooms_count != null && <span className="rounded-full bg-white dark:bg-[#121a15] border border-[#e8eae2] dark:border-[#223028] px-3 py-1.5 text-xs font-medium">🛏 {item.rooms_count} rooms</span>}
+                          {item.max_guests != null && <span className="rounded-full bg-white dark:bg-[#121a15] border border-[#e8eae2] dark:border-[#223028] px-3 py-1.5 text-xs font-medium">👥 up to {item.max_guests} guests</span>}
+                          {item.ac_type && <span className="rounded-full bg-white dark:bg-[#121a15] border border-[#e8eae2] dark:border-[#223028] px-3 py-1.5 text-xs font-medium">❄ {item.ac_type === "Non-AC" ? "Non-AC" : item.ac_type === "Mixed" ? "Mixed AC" : "Air-conditioned"}</span>}
+                        </div></div>
                       )}
                     </div>
                   )}

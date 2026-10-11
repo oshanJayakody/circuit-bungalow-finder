@@ -295,9 +295,11 @@ begin
     if jsonb_typeof(changes) is distinct from 'object'
        or exists (
          select 1 from jsonb_each(changes) e
-         where e.key not in ('name', 'district', 'town', 'address', 'description', 'contact_phone', 'booking_url', 'facebook_url')
+         where e.key not in ('name', 'district', 'town', 'address', 'description', 'contact_phone', 'booking_url', 'facebook_url', 'rooms_count', 'max_guests', 'ac_type')
             or (e.value <> 'null'::jsonb and jsonb_typeof(e.value) <> 'string')
             or (jsonb_typeof(e.value) = 'string' and length(e.value #>> '{}') > 2000)
+            or (e.key in ('rooms_count', 'max_guests') and e.value <> 'null'::jsonb and (e.value #>> '{}') !~ '^[0-9]+$')
+            or (e.key = 'ac_type' and e.value not in ('null'::jsonb, '"AC"'::jsonb, '"Non-AC"'::jsonb, '"Mixed"'::jsonb))
        ) then
       raise exception 'Suggestion contains unsupported or invalid values';
     end if;
@@ -310,7 +312,10 @@ begin
       description = case when changes ? 'description' then nullif(changes->>'description', '') else b.description end,
       contact_phone = case when changes ? 'contact_phone' then nullif(changes->>'contact_phone', '') else b.contact_phone end,
       booking_url = case when changes ? 'booking_url' then nullif(changes->>'booking_url', '') else b.booking_url end,
-      facebook_url = case when changes ? 'facebook_url' then nullif(changes->>'facebook_url', '') else b.facebook_url end
+      facebook_url = case when changes ? 'facebook_url' then nullif(changes->>'facebook_url', '') else b.facebook_url end,
+      rooms_count = case when changes ? 'rooms_count' then nullif(changes->>'rooms_count', '')::integer else b.rooms_count end,
+      max_guests = case when changes ? 'max_guests' then nullif(changes->>'max_guests', '')::integer else b.max_guests end,
+      ac_type = case when changes ? 'ac_type' then nullif(changes->>'ac_type', '') else b.ac_type end
     where b.id = suggestion.bungalow_id;
     if not found then raise exception 'Bungalow listing not found'; end if;
   end if;
