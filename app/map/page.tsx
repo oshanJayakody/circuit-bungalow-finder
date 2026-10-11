@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ThemeToggle from "@/components/ThemeToggle";
+import SiteLogo from "@/components/SiteLogo";
 import PageNav from "@/components/PageNav";
 
 const BungalowMap = dynamic(
@@ -111,7 +112,7 @@ export default function MapPage() {
     <main className="min-h-screen bg-[#fffefa] dark:bg-[#0b100e] text-[#23372f] dark:text-[#e9f1ea]">
       <header className="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-5 sm:px-9 lg:px-14">
         <Link href="/" className="flex items-center gap-3">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#244f3d] dark:bg-[#3d7a5c] text-xl text-white">⌂</span>
+          <SiteLogo />
           <span className="text-[15px] font-bold leading-tight tracking-[-.04em] sm:text-lg">Circuit Bungalow Finder</span>
         </Link>
         <div className="flex items-center gap-2">

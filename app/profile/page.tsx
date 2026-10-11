@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ThemeToggle from "@/components/ThemeToggle";
+import SiteLogo from "@/components/SiteLogo";
 import PageNav from "@/components/PageNav";
 
 type Contribution = { id: string; name: string; district: string; town: string; status: string; created_at: string };
@@ -86,7 +87,7 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-[#fffefa] dark:bg-[#0b100e] text-[#23372f] dark:text-[#e9f1ea]">
-      <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#244f3d] dark:bg-[#3d7a5c] text-xl text-white">⌂</span><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><PageNav /></div></header>
+      <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><SiteLogo /><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><PageNav /></div></header>
       <div className="mx-auto max-w-[1200px] px-5 pb-14 pt-8 sm:px-9 sm:pt-12">
         <p className="text-xs font-bold uppercase tracking-[.18em] text-[#8a9b8b] dark:text-[#8fa393]">Your account</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] sm:text-5xl">Welcome, {name || "Contributor"}</h1><p className="mt-3 text-sm text-[#718077] dark:text-[#9db0a2]">Keep track of the places you’ve shared with the community.</p>
         {message && !userId && <section className="mt-8 max-w-xl rounded-3xl border border-[#e8eae2] dark:border-[#223028] bg-white dark:bg-[#121a15] p-7"><p className="text-sm text-[#718077] dark:text-[#9db0a2]">{message}</p><Link href="/login" className="mt-5 inline-block rounded-full bg-[#244f3d] dark:bg-[#3d7a5c] px-5 py-3 text-sm font-semibold text-white">Log in</Link></section>}

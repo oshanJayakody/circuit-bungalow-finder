@@ -8,6 +8,7 @@ import { isAdminUser } from "@/lib/admin";
 import { safeHttpUrl } from "@/lib/urls";
 import BungalowSubmissionForm from "@/components/BungalowSubmissionForm";
 import ThemeToggle from "@/components/ThemeToggle";
+import SiteLogo from "@/components/SiteLogo";
 import BookmarkButton from "@/components/BookmarkButton";
 
 type Bungalow = {
@@ -153,7 +154,7 @@ export default function Home() {
     <main className="min-h-screen overflow-hidden bg-[#fffefa] dark:bg-[#0b100e] text-[#23372f] dark:text-[#e9f1ea]">
       <header className="mx-auto flex max-w-[1440px] items-center justify-between gap-5 px-5 py-5 sm:px-9 lg:px-14">
         <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Circuit Bungalow Finder home">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#244f3d] dark:bg-[#3d7a5c] text-xl text-white">⌂</span>
+          <SiteLogo />
           <span className="text-[15px] font-bold leading-tight tracking-[-0.04em] sm:text-lg">Circuit Bungalow<br className="sm:hidden" /> Finder</span>
         </Link>
         <nav className="hidden items-center gap-8 text-sm font-medium text-[#51655b] dark:text-[#a9bcae] lg:flex">

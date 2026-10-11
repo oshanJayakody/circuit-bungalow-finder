@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { safeHttpUrl } from "@/lib/urls";
 import ThemeToggle from "@/components/ThemeToggle";
+import SiteLogo from "@/components/SiteLogo";
 import PageNav from "@/components/PageNav";
 import BookmarkButton from "@/components/BookmarkButton";
 
@@ -86,7 +87,7 @@ export default function DestinationList({ town }: { town: string }) {
     <main className="min-h-screen bg-[#fffefa] text-[#23372f] dark:bg-[#0b100e] dark:text-[#e9f1ea]">
       <header className="mx-auto flex max-w-[1440px] items-center justify-between gap-5 px-5 py-5 sm:px-9 lg:px-14">
         <Link href="/" className="flex shrink-0 items-center gap-3" aria-label="Circuit Bungalow Finder home">
-          <span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#244f3d] text-xl text-white dark:bg-[#3d7a5c]">⌂</span>
+          <SiteLogo />
           <span className="text-[15px] font-bold leading-tight tracking-[-0.04em] sm:text-lg">Circuit Bungalow Finder</span>
         </Link>
         <div className="flex items-center gap-2">
