@@ -22,10 +22,12 @@ type Bungalow = {
 type Department = { id: number; name: string };
 
 const destinations = [
-  { name: "Nuwara Eliya", detail: "Cool highland air", icon: "⌁", tone: "bg-[#e5eee3] dark:bg-[#1a2620]" },
-  { name: "Kandy", detail: "Culture & hills", icon: "◉", tone: "bg-[#f4e9dc] dark:bg-[#262019]" },
-  { name: "Galle", detail: "Coastal heritage", icon: "⌂", tone: "bg-[#e2edf0] dark:bg-[#19242a]" },
-  { name: "Badulla", detail: "Tea country views", icon: "△", tone: "bg-[#ece8f1] dark:bg-[#221f2b]" },
+  { name: "Nuwara Eliya", detail: "Cool highland air", image: "/destinations/nuwara-eliya.jpg" },
+  { name: "Kandy", detail: "Culture & hills", image: "/destinations/kandy.jpg" },
+  { name: "Galle", detail: "Coastal heritage", image: "/destinations/galle.jpg" },
+  { name: "Badulla", detail: "Tea country views", image: "/destinations/badulla.jpg" },
+  { name: "Kataragama", detail: "Sacred city & wildlife", image: "/destinations/kataragama.jpg" },
+  { name: "Anuradhapura", detail: "Ancient stupas", image: "/destinations/anuradhapura.jpg" },
 ];
 
 const PAGE_SIZE = 24;
@@ -191,8 +193,21 @@ export default function Home() {
           <div><p className="mb-2 text-xs font-bold uppercase tracking-[.18em] text-[#8a9b8b] dark:text-[#8fa393]">A little inspiration</p><h2 className="text-2xl font-semibold tracking-[-.04em] sm:text-3xl">Explore by destination</h2></div>
           <a href="#bungalows" className="hidden text-sm font-semibold text-[#315c46] dark:text-[#7fb894] hover:underline sm:block">Browse all stays ↗</a>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {destinations.map((place) => <button key={place.name} onClick={() => chooseDestination(place.name)} className={`group flex min-h-28 items-center gap-3 rounded-2xl ${place.tone} p-4 text-left transition hover:-translate-y-1 sm:min-h-32 sm:gap-4 sm:p-5`}><span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/75 dark:bg-[#121a15]/75 text-xl text-[#42634d] dark:text-[#8fb89b] sm:h-14 sm:w-14">{place.icon}</span><span><span className="block text-sm font-bold sm:text-base">{place.name}</span><span className="mt-1 block text-xs text-[#63756a] dark:text-[#a3b6a8] sm:text-sm">{place.detail}</span></span></button>)}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+          {destinations.map((place) => (
+            <button
+              key={place.name}
+              onClick={() => chooseDestination(place.name)}
+              className="group relative min-h-44 overflow-hidden rounded-2xl text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg sm:min-h-56"
+            >
+              <img src={place.image} alt={place.name} loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+              <span className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                <span className="block text-base font-bold text-white sm:text-xl">{place.name}</span>
+                <span className="mt-1 block text-xs text-white/80 sm:text-sm">{place.detail}</span>
+              </span>
+            </button>
+          ))}
         </div>
       </section>
 
