@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ThemeToggle from "@/components/ThemeToggle";
+import PageNav from "@/components/PageNav";
 
 const BungalowMap = dynamic(
   () => import("@/components/BungalowMap"),
@@ -115,7 +116,7 @@ export default function MapPage() {
         </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Link href="/" className="rounded-full border border-[#dce3dc] dark:border-[#243830] px-4 py-2.5 text-sm font-semibold hover:bg-[#f5f6f1] dark:hover:bg-[#182219]">← Back to explore</Link>
+          <PageNav />
         </div>
       </header>
 

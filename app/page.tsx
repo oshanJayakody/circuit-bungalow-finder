@@ -127,8 +127,7 @@ export default function Home() {
   }
 
   function chooseDestination(name: string) {
-    setWhere(name);
-    document.getElementById("explore")?.scrollIntoView({ behavior: "smooth" });
+    router.push(`/destinations/${encodeURIComponent(name)}`);
   }
 
   return (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
+import PageNav from "@/components/PageNav";
 import { supabase } from "@/lib/supabase";
 import { isAdminUser } from "@/lib/admin";
 
@@ -64,9 +65,7 @@ export default function AuthForm({ mode }: AuthFormProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f6f7f2] dark:bg-[#151f19] px-5 py-12 text-[#173b32] dark:text-[#2c5a44]">
       <section className="w-full max-w-md rounded-3xl border border-[#e3e9df] dark:border-[#223028] bg-white dark:bg-[#121a15] p-8 shadow-[0_24px_70px_rgba(23,59,50,0.09)] sm:p-10">
-        <Link href="/" className="text-sm font-semibold text-[#517466] dark:text-[#8fb89b] hover:text-[#173b32] dark:hover:text-[#2c5a44]">
-          ← Circuit Bungalow Finder
-        </Link>
+        <PageNav />
         <div className="mt-8">
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#819985] dark:text-[#8ba391]">
             Welcome {isSignup ? "aboard" : "back"}

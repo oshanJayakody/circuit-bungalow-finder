@@ -8,6 +8,7 @@ import { getBungalowReviews } from "@/lib/reviews";
 import { supabase } from "@/lib/supabase";
 import { safeHttpUrl, safeTelephone } from "@/lib/urls";
 import ThemeToggle from "@/components/ThemeToggle";
+import PageNav from "@/components/PageNav";
 
 type Bungalow = {
   id: string;
@@ -81,7 +82,7 @@ export default function BungalowDetails({ bungalowId }: { bungalowId: string }) 
 
   return (
     <main className="min-h-screen bg-[#fffefa] dark:bg-[#0b100e] text-[#23372f] dark:text-[#e9f1ea]">
-      <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#244f3d] dark:bg-[#3d7a5c] text-xl text-white">⌂</span><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><Link href="/" className="rounded-full border border-[#dce3dc] dark:border-[#243830] px-4 py-2.5 text-sm font-semibold hover:bg-[#f5f6f1] dark:hover:bg-[#182219]">← Explore stays</Link></div></header>
+      <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#244f3d] dark:bg-[#3d7a5c] text-xl text-white">⌂</span><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><PageNav /></div></header>
       <div className="mx-auto max-w-[1200px] px-5 pb-16 sm:px-9">
         {loading ? <p className="py-20 text-center text-sm text-[#718077] dark:text-[#9db0a2]">Loading bungalow details…</p> : error || !bungalow ? <section className="mt-10 rounded-3xl bg-[#f3f4ee] dark:bg-[#151f19] p-8 text-sm text-[#718077] dark:text-[#9db0a2]">{error || "Bungalow unavailable."}<p className="mt-4"><Link href="/" className="font-semibold text-[#315c46] dark:text-[#7fb894] underline">Return to search</Link></p></section> : <>
           <div className="mb-6 mt-7 flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-[-.05em] sm:text-5xl">{bungalow.name}</h1><p className="mt-3 text-sm text-[#718077] dark:text-[#9db0a2]">{bungalow.town}, {bungalow.district}{department && ` · ${department}`}</p></div><div className="text-sm font-semibold">{averageRating ? <><span className="text-[#c18b37] dark:text-[#d9a94f]">★</span> {averageRating.toFixed(1)} <span className="font-normal text-[#718077] dark:text-[#9db0a2]">· {reviews.length} {reviews.length === 1 ? "review" : "reviews"}</span></> : <span className="text-[#718077] dark:text-[#9db0a2]">No reviews yet</span>}</div></div>

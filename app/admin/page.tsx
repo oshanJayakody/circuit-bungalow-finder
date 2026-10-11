@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { isAdminUser } from "@/lib/admin";
 import ThemeToggle from "@/components/ThemeToggle";
+import PageNav from "@/components/PageNav";
 
 type Submission = {
   id: string;
@@ -99,7 +100,7 @@ export default function AdminPage() {
         <Link href="/" className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#244f3d] dark:bg-[#3d7a5c] text-xl text-white">⌂</span><span className="text-lg font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          <Link href="/" className="rounded-full border border-[#dce3dc] dark:border-[#243830] px-4 py-2.5 text-sm font-semibold hover:bg-[#f5f6f1] dark:hover:bg-[#182219]">← View site</Link>
+          <PageNav />
         </div>
       </header>
       <div className="mx-auto max-w-[1440px] px-5 pb-14 sm:px-9 lg:px-14">
