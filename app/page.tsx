@@ -8,6 +8,7 @@ import { isAdminUser } from "@/lib/admin";
 import { safeHttpUrl } from "@/lib/urls";
 import BungalowSubmissionForm from "@/components/BungalowSubmissionForm";
 import ThemeToggle from "@/components/ThemeToggle";
+import BookmarkButton from "@/components/BookmarkButton";
 
 type Bungalow = {
   id: string;
@@ -44,6 +45,18 @@ export default function Home() {
   const [hasMore, setHasMore] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Load the signed-in user's saved bungalows once, so every card can
+    // show its bookmark state without a query per card.
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("bookmarks").select("bungalow_id").eq("user_id", user.id);
+      if (data) setSavedIds(new Set(data.map((row) => row.bungalow_id as string)));
+    })();
+  }, []);
   const requestId = useRef(0);
 
   useEffect(() => {
@@ -224,6 +237,7 @@ export default function Home() {
               <div className="relative mb-3 aspect-[1.13/1] overflow-hidden rounded-2xl bg-[#e9ece5] dark:bg-[#1d2b22]">
                 <Link href={`/bungalows/${bungalow.id}`} aria-label={`View ${bungalow.name} details`} className="absolute inset-0 z-0">{imageUrl ? <img src={imageUrl} alt={bungalow.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" /> : <div className={`grid h-full w-full place-items-center ${["bg-[#e7eee5] dark:bg-[#1d2b22]", "bg-[#eee8dd] dark:bg-[#262019]", "bg-[#e4edf0] dark:bg-[#19242a]", "bg-[#ebe6ed] dark:bg-[#241f2b]"][index % 4]}`}><span className="text-5xl text-[#9aab9c]">⌂</span></div>}</Link>
                 <span className="absolute left-3 top-3 rounded-full bg-white/90 dark:bg-[#121a15]/90 px-3 py-1.5 text-[11px] font-bold text-[#34513f] dark:text-[#8fc39e] backdrop-blur">Government stay</span>
+                <span className="absolute right-3 top-3"><BookmarkButton bungalowId={bungalow.id} initialSaved={savedIds.has(bungalow.id)} /></span>
                 <button type="button" aria-label="Save bungalow" onClick={(event) => event.preventDefault()} className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/90 dark:bg-[#121a15]/90 text-lg text-[#405a4b] dark:text-[#93b3a0] backdrop-blur transition hover:scale-105">♡</button>
               </div>
               <Link href={`/bungalows/${bungalow.id}`} className="block rounded-sm focus-visible:outline-2 focus-visible:outline-[#315c46] dark:focus-visible:outline-[#7fb894]"><div className="flex items-start justify-between gap-3"><h3 className="truncate text-[15px] font-semibold">{bungalow.town}, {bungalow.district}</h3><span className="shrink-0 text-sm text-[#52685a] dark:text-[#a9bcae]">⌂</span></div>

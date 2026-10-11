@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import { safeHttpUrl, safeTelephone } from "@/lib/urls";
 import ThemeToggle from "@/components/ThemeToggle";
 import PageNav from "@/components/PageNav";
+import BookmarkButton from "@/components/BookmarkButton";
 
 type Bungalow = {
   id: string;
@@ -38,6 +39,7 @@ export default function BungalowDetails({ bungalowId }: { bungalowId: string }) 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
 
   const loadReviews = useCallback(async () => {
     try {
@@ -64,6 +66,11 @@ export default function BungalowDetails({ bungalowId }: { bungalowId: string }) 
         }
       }
       await loadReviews();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: bookmark } = await supabase.from("bookmarks").select("id").eq("user_id", user.id).eq("bungalow_id", bungalowId).maybeSingle();
+        setSaved(Boolean(bookmark));
+      }
       } catch (loadError) {
         console.error(loadError);
         setError("Unable to load this bungalow. Please try again.");
@@ -85,7 +92,7 @@ export default function BungalowDetails({ bungalowId }: { bungalowId: string }) 
       <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><span className="grid h-10 w-10 place-items-center rounded-2xl bg-[#244f3d] dark:bg-[#3d7a5c] text-xl text-white">⌂</span><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><PageNav /></div></header>
       <div className="mx-auto max-w-[1200px] px-5 pb-16 sm:px-9">
         {loading ? <p className="py-20 text-center text-sm text-[#718077] dark:text-[#9db0a2]">Loading bungalow details…</p> : error || !bungalow ? <section className="mt-10 rounded-3xl bg-[#f3f4ee] dark:bg-[#151f19] p-8 text-sm text-[#718077] dark:text-[#9db0a2]">{error || "Bungalow unavailable."}<p className="mt-4"><Link href="/" className="font-semibold text-[#315c46] dark:text-[#7fb894] underline">Return to search</Link></p></section> : <>
-          <div className="mb-6 mt-7 flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-[-.05em] sm:text-5xl">{bungalow.name}</h1><p className="mt-3 text-sm text-[#718077] dark:text-[#9db0a2]">{bungalow.town}, {bungalow.district}{department && ` · ${department}`}</p></div><div className="text-sm font-semibold">{averageRating ? <><span className="text-[#c18b37] dark:text-[#d9a94f]">★</span> {averageRating.toFixed(1)} <span className="font-normal text-[#718077] dark:text-[#9db0a2]">· {reviews.length} {reviews.length === 1 ? "review" : "reviews"}</span></> : <span className="text-[#718077] dark:text-[#9db0a2]">No reviews yet</span>}</div></div>
+          <div className="mb-6 mt-7 flex flex-wrap items-end justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-[-.05em] sm:text-5xl">{bungalow.name}</h1><p className="mt-3 text-sm text-[#718077] dark:text-[#9db0a2]">{bungalow.town}, {bungalow.district}{department && ` · ${department}`}</p></div><div className="flex items-center gap-3"><div className="text-sm font-semibold">{averageRating ? <><span className="text-[#c18b37] dark:text-[#d9a94f]">★</span> {averageRating.toFixed(1)} <span className="font-normal text-[#718077] dark:text-[#9db0a2]">· {reviews.length} {reviews.length === 1 ? "review" : "reviews"}</span></> : <span className="text-[#718077] dark:text-[#9db0a2]">No reviews yet</span>}</div><BookmarkButton bungalowId={bungalow.id} initialSaved={saved} variant="pill" /></div></div>
 
           {images.length ? <div className="grid max-h-[580px] gap-2 overflow-hidden rounded-[28px] sm:grid-cols-2"><div className="h-[300px] sm:h-[480px]"><img src={images[0]} alt={bungalow.name} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div><div className="hidden grid-cols-2 grid-rows-2 gap-2 sm:grid">{images.slice(1, 5).map((image, index) => <img key={`${image}-${index}`} src={image} alt={`${bungalow.name} view ${index + 2}`} loading="lazy" decoding="async" className="h-full min-h-0 w-full object-cover" />)}{images.length === 1 && <div className="col-span-2 grid place-items-center bg-[#e8eee5] dark:bg-[#1d2b22] text-5xl text-[#9aab9c]">⌂</div>}</div></div> : <div className="grid h-72 place-items-center rounded-[28px] bg-[#e8eee5] dark:bg-[#1d2b22] text-6xl text-[#9aab9c] sm:h-[420px]">⌂</div>}
 

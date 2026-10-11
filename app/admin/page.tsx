@@ -15,6 +15,13 @@ type Submission = {
   status: string;
   submitted_by: string | null;
   created_at: string;
+  description: string | null;
+  address: string | null;
+  contact_phone: string | null;
+  booking_url: string | null;
+  facilities: string[] | null;
+  image_urls: string[] | null;
+  department_id: number | null;
 };
 type EditSuggestion = {
   id: string;
@@ -30,6 +37,8 @@ export default function AdminPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [suggestions, setSuggestions] = useState<EditSuggestion[]>([]);
   const [analytics, setAnalytics] = useState({ pending: 0, approved: 0, contributors: 0 });
+  const [departments, setDepartments] = useState<Record<number, string>>({});
+  const [expandedId, setExpandedId] = useState("");
   const [message, setMessage] = useState("");
   const [busyId, setBusyId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -48,10 +57,11 @@ export default function AdminPage() {
       return;
     }
 
-    const [listingResult, suggestionResult, analyticsResult] = await Promise.all([
-      supabase.from("bungalows").select("id, name, district, town, status, submitted_by, created_at").eq("status", "pending").order("created_at", { ascending: false }).limit(100),
+    const [listingResult, suggestionResult, analyticsResult, departmentResult] = await Promise.all([
+      supabase.from("bungalows").select("id, name, district, town, status, submitted_by, created_at, description, address, contact_phone, booking_url, facilities, image_urls, department_id").eq("status", "pending").order("created_at", { ascending: false }).limit(100),
       supabase.from("bungalow_suggestions").select("id, bungalow_id, user_id, proposed_changes, status, created_at").eq("status", "pending").order("created_at", { ascending: false }).limit(100),
       supabase.rpc("get_admin_analytics"),
+      supabase.from("departments").select("id, name"),
     ]);
     if (listingResult.error) {
       setMessage(`Unable to load dashboard data: ${listingResult.error.message}`);
@@ -63,6 +73,11 @@ export default function AdminPage() {
     const rows = (listingResult.data ?? []) as Submission[];
     setSubmissions(rows);
     setSuggestions((suggestionResult.data ?? []) as EditSuggestion[]);
+    if (!departmentResult.error) {
+      const map: Record<number, string> = {};
+      for (const d of (departmentResult.data ?? []) as { id: number; name: string }[]) map[d.id] = d.name;
+      setDepartments(map);
+    }
     if (analyticsResult.data?.[0]) setAnalytics(analyticsResult.data[0]);
     setLoading(false);
   }, []);
@@ -115,7 +130,36 @@ export default function AdminPage() {
 
           <section className="mt-10 overflow-hidden rounded-3xl border border-[#e8eae2] dark:border-[#223028] bg-white dark:bg-[#121a15]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#ecece5] dark:border-[#223028] px-5 py-5 sm:px-7"><div><h2 className="text-xl font-semibold">Contribution queue</h2><p className="mt-1 text-sm text-[#718077] dark:text-[#9db0a2]">Approve a listing to make it visible in search and on the map.</p></div><span className="rounded-full bg-[#f3f4ee] dark:bg-[#151f19] px-3 py-1.5 text-xs font-semibold text-[#52685a] dark:text-[#a9bcae]">{analytics.pending} pending · latest 100 shown</span></div>
-            {loading ? <p className="p-7 text-sm text-[#718077] dark:text-[#9db0a2]">Loading submissions…</p> : submissions.length === 0 ? <p className="p-7 text-sm text-[#718077] dark:text-[#9db0a2]">No submissions yet.</p> : <div className="divide-y divide-[#ecece5] dark:divide-[#223028]">{submissions.map((item) => <div key={item.id} className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{item.name}</h3><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${item.status === "approved" ? "bg-[#e8eee5] dark:bg-[#1d2b22] text-[#315c46] dark:text-[#7fb894]" : "bg-[#f5eddd] dark:bg-[#2b2417] text-[#8a6732] dark:text-[#d9b36c]"}`}>{item.status}</span></div><p className="mt-1 text-sm text-[#718077] dark:text-[#9db0a2]">{item.town}, {item.district} · Submitted {new Date(item.created_at).toLocaleDateString()}</p><p className="mt-1 truncate text-xs text-[#9aa69e] dark:text-[#6f8175]">Contribution ID: {item.id}</p></div>{item.status === "pending" && <button onClick={() => void approve(item.id)} disabled={busyId === item.id} className="shrink-0 rounded-full bg-[#244f3d] dark:bg-[#3d7a5c] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#183d2e] dark:hover:bg-[#2c5a44] disabled:opacity-60">{busyId === item.id ? "Approving…" : "Approve listing"}</button>}</div>)}</div>}
+            {loading ? <p className="p-7 text-sm text-[#718077] dark:text-[#9db0a2]">Loading submissions…</p> : submissions.length === 0 ? <p className="p-7 text-sm text-[#718077] dark:text-[#9db0a2]">No submissions yet.</p> : <div className="divide-y divide-[#ecece5] dark:divide-[#223028]">{submissions.map((item) => {
+              const expanded = expandedId === item.id;
+              const deptName = item.department_id != null ? departments[item.department_id] : null;
+              return (
+                <div key={item.id} className="px-5 py-5 sm:px-7">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h3 className="font-semibold">{item.name}</h3><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold capitalize ${item.status === "approved" ? "bg-[#e8eee5] dark:bg-[#1d2b22] text-[#315c46] dark:text-[#7fb894]" : "bg-[#f5eddd] dark:bg-[#2b2417] text-[#8a6732] dark:text-[#d9b36c]"}`}>{item.status}</span></div><p className="mt-1 text-sm text-[#718077] dark:text-[#9db0a2]">{item.town}, {item.district} · Submitted {new Date(item.created_at).toLocaleDateString()}</p><p className="mt-1 truncate text-xs text-[#9aa69e] dark:text-[#6f8175]">Contribution ID: {item.id}</p></div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <button onClick={() => setExpandedId(expanded ? "" : item.id)} aria-expanded={expanded} className="rounded-full border border-[#dce3dc] dark:border-[#243830] px-5 py-2.5 text-sm font-semibold text-[#52685a] dark:text-[#a9bcae] hover:bg-[#f5f6f1] dark:hover:bg-[#182219]">{expanded ? "Hide details" : "View details"}</button>
+                      {item.status === "pending" && <button onClick={() => void approve(item.id)} disabled={busyId === item.id} className="rounded-full bg-[#244f3d] dark:bg-[#3d7a5c] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#183d2e] dark:hover:bg-[#2c5a44] disabled:opacity-60">{busyId === item.id ? "Approving…" : "Approve listing"}</button>}
+                    </div>
+                  </div>
+                  {expanded && (
+                    <div className="mt-4 rounded-2xl bg-[#f8f9f5] dark:bg-[#151f19] p-5">
+                      {item.image_urls?.[0] && <img src={item.image_urls[0]} alt={item.name} loading="lazy" className="mb-4 h-44 w-full rounded-xl object-cover" />}
+                      {item.description && <p className="whitespace-pre-line text-sm leading-6 text-[#52685a] dark:text-[#a9bcae]">{item.description}</p>}
+                      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+                        {deptName && <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#8a9b8b] dark:text-[#8fa393]">Department</dt><dd className="mt-1">{deptName}</dd></div>}
+                        {item.address && <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#8a9b8b] dark:text-[#8fa393]">Address</dt><dd className="mt-1">{item.address}</dd></div>}
+                        {item.contact_phone && <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#8a9b8b] dark:text-[#8fa393]">Phone</dt><dd className="mt-1">{item.contact_phone}</dd></div>}
+                        {item.booking_url && <div><dt className="text-xs font-semibold uppercase tracking-wide text-[#8a9b8b] dark:text-[#8fa393]">Booking link</dt><dd className="mt-1 break-all"><a href={item.booking_url} target="_blank" rel="noreferrer" className="text-[#315c46] dark:text-[#7fb894] underline">{item.booking_url}</a></dd></div>}
+                      </dl>
+                      {item.facilities && item.facilities.length > 0 && (
+                        <div className="mt-4"><p className="text-xs font-semibold uppercase tracking-wide text-[#8a9b8b] dark:text-[#8fa393]">Facilities</p><div className="mt-2 flex flex-wrap gap-2">{item.facilities.map((f) => <span key={f} className="rounded-full bg-white dark:bg-[#121a15] border border-[#e8eae2] dark:border-[#223028] px-3 py-1.5 text-xs font-medium">{f}</span>)}</div></div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}</div>}
           </section>
 
           <section className="mt-8 overflow-hidden rounded-3xl border border-[#e8eae2] dark:border-[#223028] bg-white dark:bg-[#121a15]">

@@ -8,6 +8,11 @@ import PageNav from "@/components/PageNav";
 
 type Contribution = { id: string; name: string; district: string; town: string; status: string; created_at: string };
 type Rank = { userId: string; count: number };
+type SavedBungalow = {
+  bungalow_id: string;
+  created_at: string;
+  bungalow: { id: string; name: string; town: string; district: string; image_urls: string[] | null } | null;
+};
 
 export default function ProfilePage() {
   const [name, setName] = useState("");
@@ -15,6 +20,7 @@ export default function ProfilePage() {
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [rankings, setRankings] = useState<Rank[]>([]);
   const [contributionStats, setContributionStats] = useState({ total: 0, approved: 0, pending: 0 });
+  const [saved, setSaved] = useState<SavedBungalow[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -29,7 +35,7 @@ export default function ProfilePage() {
       setUserId(user.id);
       setName(user.user_metadata?.full_name || user.user_metadata?.name || "Contributor");
 
-      const [mineResult, approvedResult, pendingResult, rankingsResult] = await Promise.all([
+      const [mineResult, approvedResult, pendingResult, rankingsResult, savedResult] = await Promise.all([
         supabase.from("bungalows").select("id, name, district, town, status, created_at")
           .eq("submitted_by", user.id).order("created_at", { ascending: false }).limit(100),
         supabase.from("bungalows").select("id", { count: "exact", head: true })
@@ -37,6 +43,8 @@ export default function ProfilePage() {
         supabase.from("bungalows").select("id", { count: "exact", head: true })
           .eq("submitted_by", user.id).eq("status", "pending"),
         supabase.rpc("get_contributor_rankings"),
+        supabase.from("bookmarks").select("bungalow_id, created_at, bungalow:bungalows(id, name, town, district, image_urls)")
+          .eq("user_id", user.id).order("created_at", { ascending: false }).limit(100),
       ]);
       if (mineResult.error) setMessage(`Unable to load your contributions: ${mineResult.error.message}`);
       else {
@@ -50,6 +58,15 @@ export default function ProfilePage() {
       if (rankingsResult.error) console.error("Unable to load contributor rankings:", rankingsResult.error.message);
       else setRankings(((rankingsResult.data ?? []) as { user_id: string; listing_count: number | string }[])
         .map((row) => ({ userId: row.user_id, count: Number(row.listing_count) })));
+      if (savedResult.error) console.error("Unable to load saved bungalows:", savedResult.error.message);
+      else {
+        const normalized: SavedBungalow[] = ((savedResult.data ?? []) as Array<{ bungalow_id: string; created_at: string; bungalow: unknown }>).map((row) => ({
+          bungalow_id: row.bungalow_id,
+          created_at: row.created_at,
+          bungalow: (Array.isArray(row.bungalow) ? row.bungalow[0] ?? null : row.bungalow) as SavedBungalow["bungalow"],
+        }));
+        setSaved(normalized);
+      }
       setLoading(false);
     }
     void loadProfile();
@@ -57,6 +74,15 @@ export default function ProfilePage() {
 
   const approvedCount = contributionStats.approved;
   const rank = rankings.findIndex((item) => item.userId === userId);
+
+  async function removeSaved(bungalowId: string) {
+    const { error } = await supabase.from("bookmarks").delete().eq("user_id", userId).eq("bungalow_id", bungalowId);
+    if (error) {
+      setMessage(`Unable to remove saved bungalow: ${error.message}`);
+      return;
+    }
+    setSaved((prev) => prev.filter((item) => item.bungalow_id !== bungalowId));
+  }
 
   return (
     <main className="min-h-screen bg-[#fffefa] dark:bg-[#0b100e] text-[#23372f] dark:text-[#e9f1ea]">
@@ -68,6 +94,30 @@ export default function ProfilePage() {
           <div className="mt-8 grid gap-4 sm:grid-cols-3">
             {[{ label: "Total contributions", value: contributionStats.total }, { label: "Published", value: approvedCount }, { label: "Awaiting review", value: contributionStats.pending }].map((item) => <article key={item.label} className="rounded-3xl border border-[#e8eae2] dark:border-[#223028] bg-white dark:bg-[#121a15] p-6"><p className="text-sm text-[#718077] dark:text-[#9db0a2]">{item.label}</p><p className="mt-4 text-4xl font-semibold tracking-[-.05em]">{loading ? "—" : item.value}</p></article>)}
           </div>
+          <section className="mt-8 overflow-hidden rounded-3xl border border-[#e8eae2] dark:border-[#223028] bg-white dark:bg-[#121a15]">
+            <div className="border-b border-[#ecece5] dark:border-[#223028] px-6 py-5"><h2 className="text-xl font-semibold">Saved bungalows</h2><p className="mt-1 text-sm text-[#718077] dark:text-[#9db0a2]">Places you’ve bookmarked for later.</p></div>
+            {loading ? <p className="p-6 text-sm text-[#718077] dark:text-[#9db0a2]">Loading saved bungalows…</p> : saved.length === 0 ? <p className="p-6 text-sm text-[#718077] dark:text-[#9db0a2]">Nothing saved yet. Tap the ♡ on any bungalow to keep it here.</p> : <div className="grid gap-5 p-6 sm:grid-cols-2 lg:grid-cols-3">
+              {saved.map((item) => {
+                const b = item.bungalow;
+                if (!b) return null;
+                const image = b.image_urls?.[0];
+                return (
+                  <article key={item.bungalow_id} className="group overflow-hidden rounded-2xl border border-[#ecece5] dark:border-[#223028]">
+                    <div className="relative aspect-[16/10] bg-[#e9ece5] dark:bg-[#1d2b22]">
+                      <Link href={`/bungalows/${b.id}`} aria-label={`View ${b.name}`} className="absolute inset-0">
+                        {image ? <img src={image} alt={b.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" /> : <span className="grid h-full w-full place-items-center text-4xl text-[#9aab9c]">⌂</span>}
+                      </Link>
+                      <button onClick={() => void removeSaved(b.id)} aria-label={`Remove ${b.name} from saved`} title="Remove from saved" className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-base text-[#244f3d] shadow-md backdrop-blur transition hover:scale-105 dark:bg-[#121a15]/90 dark:text-[#e9f1ea]"><span aria-hidden="true">♥</span></button>
+                    </div>
+                    <Link href={`/bungalows/${b.id}`} className="block p-4">
+                      <h3 className="truncate text-[15px] font-semibold">{b.name}</h3>
+                      <p className="mt-1 truncate text-sm text-[#78867d] dark:text-[#98ab9d]">{b.town}, {b.district}</p>
+                    </Link>
+                  </article>
+                );
+              })}
+            </div>}
+          </section>
           <div className="mt-8 grid gap-7 lg:grid-cols-[1.5fr_1fr]">
             <section className="overflow-hidden rounded-3xl border border-[#e8eae2] dark:border-[#223028] bg-white dark:bg-[#121a15]"><div className="border-b border-[#ecece5] dark:border-[#223028] px-6 py-5"><h2 className="text-xl font-semibold">Your contributions</h2><p className="mt-1 text-sm text-[#718077] dark:text-[#9db0a2]">Latest 100 submissions. Counts above include all your listings.</p></div>{loading ? <p className="p-6 text-sm text-[#718077] dark:text-[#9db0a2]">Loading your contributions…</p> : contributions.length === 0 ? <div className="p-6"><p className="text-sm text-[#718077] dark:text-[#9db0a2]">You haven’t submitted a bungalow yet.</p><Link href="/#contribute" className="mt-4 inline-block text-sm font-semibold text-[#315c46] dark:text-[#7fb894] hover:underline">Share a bungalow →</Link></div> : <div className="divide-y divide-[#ecece5] dark:divide-[#223028]">{contributions.map((item) => <article key={item.id} className="flex items-center justify-between gap-4 px-6 py-5"><div className="min-w-0"><h3 className="truncate font-semibold">{item.name}</h3><p className="mt-1 text-sm text-[#718077] dark:text-[#9db0a2]">{item.town}, {item.district}</p><p className="mt-1 text-xs text-[#9aa69e] dark:text-[#6f8175]">Submitted {new Date(item.created_at).toLocaleDateString()}</p></div><span className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-bold capitalize ${item.status === "approved" ? "bg-[#e8eee5] dark:bg-[#1d2b22] text-[#315c46] dark:text-[#7fb894]" : "bg-[#f5eddd] dark:bg-[#2b2417] text-[#8a6732] dark:text-[#d9b36c]"}`}>{item.status}</span></article>)}</div>}</section>
             <section className="overflow-hidden rounded-3xl border border-[#e8eae2] dark:border-[#223028] bg-white dark:bg-[#121a15]"><div className="border-b border-[#ecece5] dark:border-[#223028] px-6 py-5"><p className="text-xs font-bold uppercase tracking-[.16em] text-[#8a9b8b] dark:text-[#8fa393]">Community</p><h2 className="mt-1 text-xl font-semibold">Contributor rankings</h2><p className="mt-1 text-sm text-[#718077] dark:text-[#9db0a2]">Ranked by approved bungalow listings.</p></div>{rankings.length === 0 ? <p className="p-6 text-sm text-[#718077] dark:text-[#9db0a2]">Rankings will appear as listings are approved.</p> : <ol className="divide-y divide-[#ecece5] dark:divide-[#223028]">{rankings.map((item, index) => <li key={item.userId} className="flex items-center gap-3 px-6 py-4"><span className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-xs font-bold ${index < 3 ? "bg-[#e8eee5] dark:bg-[#1d2b22] text-[#315c46] dark:text-[#7fb894]" : "bg-[#f3f4ee] dark:bg-[#151f19] text-[#718077] dark:text-[#9db0a2]"}`}>{index + 1}</span><span className="min-w-0 flex-1 truncate text-sm font-semibold">{item.userId === userId ? "You" : `Contributor ${String(index + 1).padStart(2, "0")}`}</span><span className="text-sm text-[#718077] dark:text-[#9db0a2]">{item.count} {item.count === 1 ? "listing" : "listings"}</span></li>)}</ol>}{rankings.length > 0 && rank === -1 && approvedCount > 0 && <p className="border-t border-[#ecece5] dark:border-[#223028] px-6 py-4 text-xs text-[#718077] dark:text-[#9db0a2]">You’re outside the top 10. Your approved listings: {approvedCount}.</p>}</section>

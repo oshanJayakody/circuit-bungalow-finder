@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { safeHttpUrl } from "@/lib/urls";
 import ThemeToggle from "@/components/ThemeToggle";
 import PageNav from "@/components/PageNav";
+import BookmarkButton from "@/components/BookmarkButton";
 
 type Bungalow = {
   id: string;
@@ -26,6 +27,7 @@ export default function DestinationList({ town }: { town: string }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const requestId = useRef(0);
 
   const load = useCallback(async (pageToLoad: number, append: boolean) => {
@@ -63,6 +65,15 @@ export default function DestinationList({ town }: { town: string }) {
     const timer = window.setTimeout(() => void load(0, false), 0);
     return () => window.clearTimeout(timer);
   }, [load]);
+
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from("bookmarks").select("bungalow_id").eq("user_id", user.id);
+      if (data) setSavedIds(new Set(data.map((row) => row.bungalow_id as string)));
+    })();
+  }, []);
 
   return (
     <main className="min-h-screen bg-[#fffefa] text-[#23372f] dark:bg-[#0b100e] dark:text-[#e9f1ea]">
@@ -112,6 +123,7 @@ export default function DestinationList({ town }: { town: string }) {
                         )}
                       </Link>
                       <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-bold text-[#34513f] backdrop-blur dark:bg-[#121a15]/90 dark:text-[#8fc39e]">Government stay</span>
+                      <span className="absolute right-3 top-3"><BookmarkButton bungalowId={bungalow.id} initialSaved={savedIds.has(bungalow.id)} /></span>
                     </div>
                     <Link href={`/bungalows/${bungalow.id}`} className="block rounded-sm focus-visible:outline-2 focus-visible:outline-[#315c46]">
                       <div className="flex items-start justify-between gap-3">
