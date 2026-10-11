@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { safeHttpUrl } from "@/lib/urls";
@@ -28,6 +28,7 @@ export default function DestinationList({ town }: { town: string }) {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [departmentNames, setDepartmentNames] = useState<Map<number, string>>(new Map());
   const requestId = useRef(0);
 
   const load = useCallback(async (pageToLoad: number, append: boolean) => {
@@ -73,6 +74,12 @@ export default function DestinationList({ town }: { town: string }) {
       const { data } = await supabase.from("bookmarks").select("bungalow_id").eq("user_id", user.id);
       if (data) setSavedIds(new Set(data.map((row) => row.bungalow_id as string)));
     })();
+    void supabase.from("departments").select("id, name")
+      .then(({ data }) => {
+        const map = new Map<number, string>();
+        for (const d of (data ?? []) as { id: number; name: string }[]) map.set(d.id, d.name);
+        setDepartmentNames(map);
+      });
   }, []);
 
   return (
@@ -126,10 +133,9 @@ export default function DestinationList({ town }: { town: string }) {
                       <span className="absolute right-3 top-3"><BookmarkButton bungalowId={bungalow.id} initialSaved={savedIds.has(bungalow.id)} /></span>
                     </div>
                     <Link href={`/bungalows/${bungalow.id}`} className="block rounded-sm focus-visible:outline-2 focus-visible:outline-[#315c46]">
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="truncate text-[15px] font-semibold">{bungalow.town}, {bungalow.district}</h3>
-                      </div>
-                      <p className="mt-1 truncate text-sm text-[#78867d] dark:text-[#98ab9d]">{bungalow.name}</p>
+                      <p className="truncate text-[11px] font-bold uppercase tracking-[0.14em] text-[#8a9b8b] dark:text-[#8fa393]">{departmentNames.get(bungalow.department_id ?? -1) ?? "Government stay"}</p>
+                      <h3 className="mt-1 truncate text-[15px] font-semibold">{bungalow.name}</h3>
+                      <p className="mt-1 truncate text-sm text-[#78867d] dark:text-[#98ab9d]">{bungalow.town}, {bungalow.district}</p>
                       {bungalow.description && <p className="mt-1 line-clamp-1 text-sm text-[#78867d] dark:text-[#98ab9d]">{bungalow.description}</p>}
                       <p className="mt-2 text-sm font-semibold text-[#315c46] dark:text-[#7fb894]">View bungalow details →</p>
                     </Link>
