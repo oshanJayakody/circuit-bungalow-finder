@@ -22,8 +22,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Leaflet map tiles stay bright; dim them slightly in dark mode so the
-   map doesn't blind. */
-.dark .leaflet-tile-pane {
-  filter: brightness(0.85) saturate(0.85);
+/* Leaflet custom pins: strip the default divIcon white square so only the
+   SVG pin shows. */
+.cbf-map-pin {
+  background: transparent;
+  border: none;
 }
