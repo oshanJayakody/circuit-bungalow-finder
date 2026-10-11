@@ -69,7 +69,24 @@ export default function AdminPage() {
       return;
     }
     if (suggestionResult.error) setMessage(`Unable to load edit suggestions: ${suggestionResult.error.message}`);
-    if (analyticsResult.error) setMessage(`Unable to load analytics: ${analyticsResult.error.message}`);
+    if (analyticsResult.error) {
+      // The get_admin_analytics function may not be installed in the database
+      // yet; fall back to direct counts so the cards still show real numbers.
+      const [pendingRes, approvedRes, contribRes] = await Promise.all([
+        supabase.from("bungalows").select("id", { count: "exact", head: true }).eq("status", "pending"),
+        supabase.from("bungalows").select("id", { count: "exact", head: true }).eq("status", "approved"),
+        supabase.from("bungalows").select("submitted_by").not("submitted_by", "is", null).limit(5000),
+      ]);
+      if (!pendingRes.error && !approvedRes.error) {
+        setAnalytics({
+          pending: pendingRes.count ?? 0,
+          approved: approvedRes.count ?? 0,
+          contributors: new Set((contribRes.data ?? []).map((row) => row.submitted_by)).size,
+        });
+      } else {
+        setMessage(`Unable to load analytics: ${analyticsResult.error.message}`);
+      }
+    } else if (analyticsResult.data?.[0]) setAnalytics(analyticsResult.data[0]);
     const rows = (listingResult.data ?? []) as Submission[];
     setSubmissions(rows);
     setSuggestions((suggestionResult.data ?? []) as EditSuggestion[]);
@@ -78,7 +95,6 @@ export default function AdminPage() {
       for (const d of (departmentResult.data ?? []) as { id: number; name: string }[]) map[d.id] = d.name;
       setDepartments(map);
     }
-    if (analyticsResult.data?.[0]) setAnalytics(analyticsResult.data[0]);
     setLoading(false);
   }, []);
 
