@@ -22,6 +22,10 @@ type Bungalow = {
   booking_url: string | null;
   facebook_url: string | null;
   facilities: string[] | null;
+  rooms_count: number | null;
+  max_guests: number | null;
+  ac_type: string | null;
+  price_info: string | null;
   latitude: number | null;
   longitude: number | null;
 };
@@ -47,7 +51,7 @@ export default function BungalowDetails({ bungalowId }: { bungalowId: string }) 
     async function load() {
       try {
       const { data, error: fetchError } = await supabase.from("bungalows")
-        .select("id, name, district, town, address, description, image_urls, department_id, contact_phone, booking_url, facebook_url, facilities, latitude, longitude")
+        .select("id, name, district, town, address, description, image_urls, department_id, contact_phone, booking_url, facebook_url, facilities, rooms_count, max_guests, ac_type, price_info, latitude, longitude")
         .eq("id", bungalowId).eq("status", "approved").maybeSingle();
       if (fetchError) setError(fetchError.message);
       else if (!data) setError("This bungalow could not be found.");
@@ -84,6 +88,38 @@ export default function BungalowDetails({ bungalowId }: { bungalowId: string }) 
 
           {images.length ? <div className="grid max-h-[580px] gap-2 overflow-hidden rounded-[28px] sm:grid-cols-2"><div className="h-[300px] sm:h-[480px]"><img src={images[0]} alt={bungalow.name} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div><div className="hidden grid-cols-2 grid-rows-2 gap-2 sm:grid">{images.slice(1, 5).map((image, index) => <img key={`${image}-${index}`} src={image} alt={`${bungalow.name} view ${index + 2}`} loading="lazy" decoding="async" className="h-full min-h-0 w-full object-cover" />)}{images.length === 1 && <div className="col-span-2 grid place-items-center bg-[#e8eee5] dark:bg-[#1d2b22] text-5xl text-[#9aab9c]">⌂</div>}</div></div> : <div className="grid h-72 place-items-center rounded-[28px] bg-[#e8eee5] dark:bg-[#1d2b22] text-6xl text-[#9aab9c] sm:h-[420px]">⌂</div>}
 
+          {(bungalow.rooms_count != null || bungalow.max_guests != null || bungalow.ac_type || bungalow.price_info) && (
+            <section aria-label="Property details" className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {bungalow.rooms_count != null && (
+                <div className="rounded-2xl border border-[#e8eae2] bg-white p-5 dark:border-[#223028] dark:bg-[#121a15]">
+                  <p className="text-2xl" aria-hidden="true">🛏</p>
+                  <p className="mt-2 text-lg font-bold tracking-tight">{bungalow.rooms_count} {bungalow.rooms_count === 1 ? "room" : "rooms"}</p>
+                  <p className="mt-1 text-xs text-[#718077] dark:text-[#9db0a2]">Bedrooms</p>
+                </div>
+              )}
+              {bungalow.max_guests != null && (
+                <div className="rounded-2xl border border-[#e8eae2] bg-white p-5 dark:border-[#223028] dark:bg-[#121a15]">
+                  <p className="text-2xl" aria-hidden="true">👥</p>
+                  <p className="mt-2 text-lg font-bold tracking-tight">Up to {bungalow.max_guests}</p>
+                  <p className="mt-1 text-xs text-[#718077] dark:text-[#9db0a2]">Guests</p>
+                </div>
+              )}
+              {bungalow.ac_type && (
+                <div className="rounded-2xl border border-[#e8eae2] bg-white p-5 dark:border-[#223028] dark:bg-[#121a15]">
+                  <p className="text-2xl" aria-hidden="true">❄</p>
+                  <p className="mt-2 text-lg font-bold tracking-tight">{bungalow.ac_type === "Non-AC" ? "Non-AC" : bungalow.ac_type === "Mixed" ? "Mixed AC" : "Air-conditioned"}</p>
+                  <p className="mt-1 text-xs text-[#718077] dark:text-[#9db0a2]">Cooling</p>
+                </div>
+              )}
+              {bungalow.price_info && (
+                <div className="rounded-2xl border border-[#e8eae2] bg-white p-5 dark:border-[#223028] dark:bg-[#121a15]">
+                  <p className="text-2xl" aria-hidden="true">💰</p>
+                  <p className="mt-2 text-sm font-bold leading-6 tracking-tight">{bungalow.price_info}</p>
+                  <p className="mt-1 text-xs text-[#718077] dark:text-[#9db0a2]">Rates & charges</p>
+                </div>
+              )}
+            </section>
+          )}
           <div className="mt-9 grid gap-10 lg:grid-cols-[1.4fr_.8fr]">
             <div>
               <section className="border-b border-[#e8eae2] dark:border-[#223028] pb-7"><h2 className="text-2xl font-semibold">About this bungalow</h2><p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#64766a] dark:text-[#a3b6a8]">{bungalow.description || "No description has been added yet."}</p></section>
