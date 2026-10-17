@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/i18n";
 
 export default function PageNav() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   function goBack() {
     if (typeof window !== "undefined" && window.history.length > 1) {
@@ -21,12 +23,12 @@ export default function PageNav() {
         onClick={goBack}
         className="rounded-full border border-[#dce3dc] px-4 py-2.5 text-sm font-semibold hover:bg-[#f5f6f1] dark:border-[#243830] dark:hover:bg-[#182219]"
       >
-        ← Back
+        ← {t("back")}
       </button>
       <Link
         href="/"
-        aria-label="Home"
-        title="Home"
+        aria-label={t("home_label")}
+        title={t("home_label")}
         className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#dce3dc] text-lg hover:bg-[#f5f6f1] dark:border-[#243830] dark:hover:bg-[#182219]"
       >
         <span aria-hidden="true">⌂</span>

@@ -13,6 +13,7 @@ export async function submitBungalow(form: {
   booking_url?: string;
   facebook_url?: string;
   facilities?: string[];
+  image_urls?: string[];
 }) {
   const {
     data: { user },

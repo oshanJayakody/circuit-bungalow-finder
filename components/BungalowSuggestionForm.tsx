@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/lib/i18n";
+import type { StringKey } from "@/lib/i18n";
 
 type EditableBungalow = {
   id: string;
@@ -35,6 +37,7 @@ export default function BungalowSuggestionForm({ bungalow }: { bungalow: Editabl
     ac_type: bungalow.ac_type ?? "",
   });
   const [message, setMessage] = useState("");
+  const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -85,32 +88,32 @@ export default function BungalowSuggestionForm({ bungalow }: { bungalow: Editabl
     }
   }
 
-  if (!signedIn) return <div className="rounded-2xl bg-[#f3f4ee] dark:bg-[#151f19] p-5 text-sm text-[#718077] dark:text-[#9db0a2]">Sign in to suggest a correction. <Link href="/login" className="font-semibold text-[#315c46] dark:text-[#7fb894] underline">Log in</Link></div>;
+  if (!signedIn) return <div className="rounded-2xl bg-[#f3f4ee] dark:bg-[#151f19] p-5 text-sm text-[#718077] dark:text-[#9db0a2]">{t("s_signin")} <Link href="/login" className="font-semibold text-[#315c46] dark:text-[#7fb894] underline">{t("login")}</Link></div>;
 
-  const fields: { key: keyof typeof values; label: string; multiline?: boolean; kind?: "number" | "ac" }[] = [
-    { key: "name", label: "Bungalow name" },
-    { key: "district", label: "District" },
-    { key: "town", label: "Town / area" },
-    { key: "address", label: "Address" },
-    { key: "description", label: "Description", multiline: true },
-    { key: "contact_phone", label: "Contact phone" },
-    { key: "booking_url", label: "Booking URL" },
-    { key: "facebook_url", label: "Facebook URL" },
-    { key: "rooms_count", label: "Number of rooms", kind: "number" },
-    { key: "max_guests", label: "Max guests", kind: "number" },
-    { key: "ac_type", label: "Air conditioning", kind: "ac" },
+  const fields: { key: keyof typeof values; label: StringKey; multiline?: boolean; kind?: "number" | "ac" }[] = [
+    { key: "name", label: "f_name" },
+    { key: "district", label: "f_district" },
+    { key: "town", label: "f_town" },
+    { key: "address", label: "f_address" },
+    { key: "description", label: "f_description", multiline: true },
+    { key: "contact_phone", label: "f_phone" },
+    { key: "booking_url", label: "f_booking_url" },
+    { key: "facebook_url", label: "f_facebook_url" },
+    { key: "rooms_count", label: "f_rooms", kind: "number" },
+    { key: "max_guests", label: "f_guests", kind: "number" },
+    { key: "ac_type", label: "f_ac", kind: "ac" },
   ];
 
   return <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
-    <p className="text-sm leading-6 text-[#718077] dark:text-[#9db0a2] sm:col-span-2">Suggest corrections to the listing. Changes will be visible after an admin approves them.</p>
+    <p className="text-sm leading-6 text-[#718077] dark:text-[#9db0a2] sm:col-span-2">{t("s_intro")}</p>
     {fields.map(({ key, label, multiline, kind }) => (
-      <label key={key} className={`grid gap-1 text-sm font-medium ${multiline ? "sm:col-span-2" : ""}`}>{label}
+      <label key={key} className={`grid gap-1 text-sm font-medium ${multiline ? "sm:col-span-2" : ""}`}>{t(label)}
         {kind === "ac" ? (
           <select className="rounded-xl border border-[#dce3dc] dark:border-[#243830] bg-white dark:bg-[#121a15] p-3 font-normal" value={values[key]} onChange={(event) => setValues((current) => ({ ...current, [key]: event.target.value }))}>
-            <option value="">Not specified</option>
-            <option value="AC">AC</option>
-            <option value="Non-AC">Non-AC</option>
-            <option value="Mixed">Mixed (some rooms AC)</option>
+            <option value="">{t("f_not_specified")}</option>
+            <option value="AC">{t("ac_ac")}</option>
+            <option value="Non-AC">{t("ac_nonac")}</option>
+            <option value="Mixed">{t("ac_mixed")}</option>
           </select>
         ) : multiline ? (
           <textarea maxLength={2000} className="rounded-xl border border-[#dce3dc] dark:border-[#243830] p-3 font-normal" rows={4} value={values[key]} onChange={(event) => setValues((current) => ({ ...current, [key]: event.target.value }))} />
@@ -119,7 +122,7 @@ export default function BungalowSuggestionForm({ bungalow }: { bungalow: Editabl
         )}
       </label>
     ))}
-    <button disabled={saving} className="w-fit rounded-full bg-[#244f3d] dark:bg-[#3d7a5c] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60 sm:col-span-2">{saving ? "Sending…" : "Send edit suggestion"}</button>
+    <button disabled={saving} className="w-fit rounded-full bg-[#244f3d] dark:bg-[#3d7a5c] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60 sm:col-span-2">{saving ? t("s_sending") : t("s_send")}</button>
     {message && <p className="text-sm text-[#52685a] dark:text-[#a9bcae] sm:col-span-2" role="status">{message}</p>}
   </form>;
 }
