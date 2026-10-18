@@ -5,8 +5,10 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { isAdminUser } from "@/lib/admin";
 import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/lib/i18n";
 import SiteLogo from "@/components/SiteLogo";
 import PageNav from "@/components/PageNav";
+import SafeImage from "@/components/SafeImage";
 import { useLanguage } from "@/lib/i18n";
 
 type Submission = {
@@ -137,6 +139,7 @@ export default function AdminPage() {
         <Link href="/" className="flex items-center gap-3"><SiteLogo /><span className="text-lg font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <LanguageToggle />
           <PageNav />
         </div>
       </header>
@@ -172,7 +175,7 @@ export default function AdminPage() {
                           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                             {item.image_urls.map((url) => (
                               <a key={url} href={url} target="_blank" rel="noreferrer">
-                                <img src={url} alt={`${item.name} photo`} loading="lazy" className="h-28 w-full rounded-xl object-cover" />
+                                <SafeImage src={url} alt={`${item.name} photo`} className="h-28 w-full rounded-xl object-cover" />
                               </a>
                             ))}
                           </div>

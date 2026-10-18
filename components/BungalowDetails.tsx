@@ -8,9 +8,11 @@ import { getBungalowReviews } from "@/lib/reviews";
 import { supabase } from "@/lib/supabase";
 import { safeHttpUrl, safeTelephone } from "@/lib/urls";
 import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/lib/i18n";
 import SiteLogo from "@/components/SiteLogo";
 import PageNav from "@/components/PageNav";
 import BookmarkButton from "@/components/BookmarkButton";
+import SafeImage from "@/components/SafeImage";
 
 type Bungalow = {
   id: string;
@@ -58,6 +60,18 @@ function amenityIcon(name: string): string {
   if (/pet|dog/.test(n)) return "🐾";
   if (/workspace|desk/.test(n)) return "💻";
   return "✓";
+}
+
+// Descriptions end with a "Source: <url>" line stored as plain text;
+// render any URLs as clickable links.
+function renderWithLinks(text: string): React.ReactNode[] {
+  return text.split(/(https?:\/\/[^\s]+)/g).map((part, index) =>
+    /^https?:\/\//.test(part) ? (
+      <a key={index} href={part} target="_blank" rel="noreferrer" className="break-all text-[#315c46] dark:text-[#7fb894] underline">{part}</a>
+    ) : (
+      <span key={index}>{part}</span>
+    )
+  );
 }
 
 export default function BungalowDetails({ bungalowId }: { bungalowId: string }) {
@@ -124,12 +138,12 @@ export default function BungalowDetails({ bungalowId }: { bungalowId: string }) 
 
   return (
     <main className="min-h-screen bg-[#fffefa] dark:bg-[#0b100e] text-[#23372f] dark:text-[#e9f1ea]">
-      <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><SiteLogo /><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><PageNav /></div></header>
+      <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><SiteLogo /><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><LanguageToggle /><PageNav /></div></header>
       <div className="mx-auto max-w-[1200px] px-5 pb-16 sm:px-9">
         {loading ? <p className="py-20 text-center text-sm text-[#718077] dark:text-[#9db0a2]">Loading bungalow details…</p> : error || !bungalow ? <section className="mt-10 rounded-3xl bg-[#f3f4ee] dark:bg-[#151f19] p-8 text-sm text-[#718077] dark:text-[#9db0a2]">{error || "Bungalow unavailable."}<p className="mt-4"><Link href="/" className="font-semibold text-[#315c46] dark:text-[#7fb894] underline">Return to search</Link></p></section> : <>
           <div className="mb-6 mt-7 flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-3xl font-semibold tracking-[-.05em] sm:text-5xl">{bungalow.name}</h1><p className="mt-3 text-sm font-semibold">{averageRating ? <><span><span className="text-[#c18b37] dark:text-[#d9a94f]">★</span> {averageRating.toFixed(1)}</span><span className="font-normal text-[#718077] dark:text-[#9db0a2]"> · {reviews.length} {reviews.length === 1 ? "review" : "reviews"}</span></> : <span className="font-normal text-[#718077] dark:text-[#9db0a2]">New · No reviews yet</span>}<span className="font-normal text-[#718077] dark:text-[#9db0a2]"> · {bungalow.town}, {bungalow.district}, Sri Lanka</span></p>{department && <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[#8a9b8b] dark:text-[#8fa393]">{department}</p>}</div><BookmarkButton bungalowId={bungalow.id} initialSaved={saved} variant="pill" /></div>
 
-          {images.length ? <div className="grid max-h-[580px] gap-2 overflow-hidden rounded-[28px] sm:grid-cols-2"><div className="h-[300px] sm:h-[480px]"><img src={images[0]} alt={bungalow.name} fetchPriority="high" decoding="async" className="h-full w-full object-cover" /></div><div className="hidden grid-cols-2 grid-rows-2 gap-2 sm:grid">{images.slice(1, 5).map((image, index) => <img key={`${image}-${index}`} src={image} alt={`${bungalow.name} view ${index + 2}`} loading="lazy" decoding="async" className="h-full min-h-0 w-full object-cover" />)}{images.length === 1 && <div className="col-span-2 grid place-items-center bg-[#e8eee5] dark:bg-[#1d2b22] text-5xl text-[#9aab9c]">⌂</div>}</div></div> : <div className="grid h-72 place-items-center rounded-[28px] bg-[#e8eee5] dark:bg-[#1d2b22] text-6xl text-[#9aab9c] sm:h-[420px]">⌂</div>}
+          {images.length ? <div className="grid max-h-[580px] gap-2 overflow-hidden rounded-[28px] sm:grid-cols-2"><div className="h-[300px] sm:h-[480px]"><SafeImage src={images[0]} alt={bungalow.name} eager className="h-full w-full object-cover" /></div><div className="hidden grid-cols-2 grid-rows-2 gap-2 sm:grid">{images.slice(1, 5).map((image, index) => <SafeImage key={`${image}-${index}`} src={image} alt={`${bungalow.name} view ${index + 2}`} className="h-full min-h-0 w-full object-cover" />)}{images.length === 1 && <div className="col-span-2 grid place-items-center bg-[#e8eee5] dark:bg-[#1d2b22] text-5xl text-[#9aab9c]">⌂</div>}</div></div> : <div className="grid h-72 place-items-center rounded-[28px] bg-[#e8eee5] dark:bg-[#1d2b22] text-6xl text-[#9aab9c] sm:h-[420px]">⌂</div>}
 
           {summaryBits.length > 0 && (
             <p className="mt-6 flex flex-wrap items-center gap-y-2 text-[15px] font-semibold">
@@ -143,7 +157,7 @@ export default function BungalowDetails({ bungalowId }: { bungalowId: string }) 
           )}
           <div className="mt-9 grid gap-10 lg:grid-cols-[1.4fr_.8fr]">
             <div>
-              <section className="border-b border-[#e8eae2] dark:border-[#223028] pb-7"><h2 className="text-2xl font-semibold">About this bungalow</h2><p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#64766a] dark:text-[#a3b6a8]">{bungalow.description || "No description has been added yet."}</p></section>
+              <section className="border-b border-[#e8eae2] dark:border-[#223028] pb-7"><h2 className="text-2xl font-semibold">About this bungalow</h2><p className="mt-4 whitespace-pre-line text-sm leading-7 text-[#64766a] dark:text-[#a3b6a8]">{bungalow.description ? renderWithLinks(bungalow.description) : "No description has been added yet."}</p></section>
               {bungalow.facilities?.length ? <section className="border-b border-[#e8eae2] dark:border-[#223028] py-7"><h2 className="text-xl font-semibold">What this place offers</h2><ul className="mt-5 grid gap-x-6 gap-y-4 sm:grid-cols-2">{(showAllAmenities ? bungalow.facilities : bungalow.facilities.slice(0, 8)).map((facility) => <li key={facility} className="flex items-center gap-4 text-[15px] text-[#23372f] dark:text-[#e9f1ea]"><span aria-hidden="true" className="text-2xl">{amenityIcon(facility)}</span>{facility}</li>)}</ul>{bungalow.facilities.length > 8 && <button type="button" onClick={() => setShowAllAmenities((v) => !v)} className="mt-6 rounded-xl border border-[#23372f] dark:border-[#e9f1ea] px-6 py-3 text-sm font-semibold transition hover:bg-[#f5f6f1] dark:hover:bg-[#182219]">{showAllAmenities ? "Show fewer amenities" : `Show all ${bungalow.facilities.length} amenities`}</button>}</section> : null}
               <section className="border-b border-[#e8eae2] dark:border-[#223028] py-7"><h2 className="text-xl font-semibold">Location</h2><p className="mt-3 text-sm leading-6 text-[#64766a] dark:text-[#a3b6a8]">{bungalow.address || `${bungalow.town}, ${bungalow.district}`}</p>{bungalow.latitude && bungalow.longitude && <Link href="/map" className="mt-3 inline-block text-sm font-semibold text-[#315c46] dark:text-[#7fb894] underline">View all bungalows on map →</Link>}</section>
               <section className="border-b border-[#e8eae2] dark:border-[#223028] py-7"><h2 className="text-xl font-semibold">Reviews</h2><div className="mt-5"><ReviewForm key={bungalow.id} bungalowId={bungalow.id} onSubmitted={() => void loadReviews()} /></div><div className="mt-7 grid gap-5">{reviews.map((review, index) => <article key={`${review.created_at}-${index}`} className="rounded-2xl bg-[#f5f6f1] dark:bg-[#182219] p-5"><div className="flex items-center justify-between"><span className="tracking-widest text-[#c18b37] dark:text-[#d9a94f]">{"★".repeat(Math.max(0, Math.min(5, review.rating)))}<span className="text-[#d7ddd5] dark:text-[#2c3a31]">{"★".repeat(5 - Math.max(0, Math.min(5, review.rating)))}</span></span><time className="text-xs text-[#8a9b8b] dark:text-[#8fa393]">{new Date(review.created_at).toLocaleDateString()}</time></div>{review.comment && <p className="mt-3 whitespace-pre-line text-sm leading-6 text-[#64766a] dark:text-[#a3b6a8]">{review.comment}</p>}</article>)}</div>{!reviews.length && <p className="mt-5 text-sm text-[#718077] dark:text-[#9db0a2]">Be the first to leave a review.</p>}</section>

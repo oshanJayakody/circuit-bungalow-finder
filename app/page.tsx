@@ -10,6 +10,7 @@ import BungalowSubmissionForm from "@/components/BungalowSubmissionForm";
 import ThemeToggle from "@/components/ThemeToggle";
 import SiteLogo from "@/components/SiteLogo";
 import BookmarkButton from "@/components/BookmarkButton";
+import SafeImage from "@/components/SafeImage";
 import { useLanguage, LanguageToggle } from "@/lib/i18n";
 
 type Bungalow = {
@@ -244,7 +245,7 @@ export default function Home() {
             const imageUrl = safeHttpUrl(bungalow.image_urls?.[0]);
             return <article key={bungalow.id} className="group min-w-0">
               <div className="relative mb-3 aspect-[1.13/1] overflow-hidden rounded-2xl bg-[#e9ece5] dark:bg-[#1d2b22]">
-                <Link href={`/bungalows/${bungalow.id}`} aria-label={`View ${bungalow.name} details`} className="absolute inset-0 z-0">{imageUrl ? <img src={imageUrl} alt={bungalow.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" /> : <div className={`grid h-full w-full place-items-center ${["bg-[#e7eee5] dark:bg-[#1d2b22]", "bg-[#eee8dd] dark:bg-[#262019]", "bg-[#e4edf0] dark:bg-[#19242a]", "bg-[#ebe6ed] dark:bg-[#241f2b]"][index % 4]}`}><span className="text-5xl text-[#9aab9c]">⌂</span></div>}</Link>
+                <Link href={`/bungalows/${bungalow.id}`} aria-label={`View ${bungalow.name} details`} className="absolute inset-0 z-0"><SafeImage src={imageUrl} alt={bungalow.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" fallback={<div className={`grid h-full w-full place-items-center ${["bg-[#e7eee5] dark:bg-[#1d2b22]", "bg-[#eee8dd] dark:bg-[#262019]", "bg-[#e4edf0] dark:bg-[#19242a]", "bg-[#ebe6ed] dark:bg-[#241f2b]"][index % 4]}`}><span className="text-5xl text-[#9aab9c]">⌂</span></div>} /></Link>
                 <span className="absolute left-3 top-3 rounded-full bg-white/90 dark:bg-[#121a15]/90 px-3 py-1.5 text-[11px] font-bold text-[#34513f] dark:text-[#8fc39e] backdrop-blur">{t("government_stay")}</span>
                 <span className="absolute right-3 top-3"><BookmarkButton bungalowId={bungalow.id} initialSaved={savedIds.has(bungalow.id)} /></span>
               </div>
@@ -276,7 +277,7 @@ export default function Home() {
       <section className="mx-auto max-w-[1440px] px-5 py-8 sm:px-9 lg:px-14 lg:py-12">
         <div className="flex flex-col overflow-hidden rounded-[28px] bg-[#e8eee5] dark:bg-[#1d2b22] md:flex-row md:items-stretch">
           <div className="flex flex-1 flex-col justify-center p-7 sm:p-10 lg:p-14"><p className="text-xs font-bold uppercase tracking-[.18em] text-[#758c78] dark:text-[#93a794]">{t("map_kicker")}</p><h2 className="mt-3 max-w-lg text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">{t("map_title")}</h2><p className="mt-3 max-w-md text-sm leading-6 text-[#64766a] dark:text-[#a3b6a8]">{t("map_sub")}</p><Link href="/map" className="mt-6 w-fit rounded-full bg-[#244f3d] dark:bg-[#3d7a5c] px-5 py-3 text-sm font-semibold text-white hover:bg-[#183d2e] dark:hover:bg-[#2c5a44]">{t("open_map")}</Link></div>
-          <div className="relative min-h-56 flex-1 bg-[#dbe5d9] dark:bg-[#1a2620] md:min-h-80"><div className="absolute inset-0 bg-cover bg-center opacity-90" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1200&q=80')" }} /><div className="absolute inset-0 bg-[#264834]/15" /><div className="absolute left-[48%] top-[35%] grid h-12 w-12 place-items-center rounded-full border-4 border-white bg-[#315c46] dark:bg-[#7fb894] text-xl text-white shadow-xl">⌂</div><div className="absolute left-[26%] top-[57%] grid h-9 w-9 place-items-center rounded-full border-4 border-white bg-[#d3a767] text-sm text-white shadow-lg">⌂</div><div className="absolute left-[71%] top-[23%] grid h-9 w-9 place-items-center rounded-full border-4 border-white bg-[#d3a767] text-sm text-white shadow-lg">⌂</div></div>
+          <div className="relative min-h-56 flex-1 bg-[#dbe5d9] dark:bg-[#1a2620] md:min-h-80"><div className="absolute inset-0 bg-cover bg-center opacity-90" style={{ backgroundImage: "url('/destinations/kandy.jpg')" }} /><div className="absolute inset-0 bg-[#264834]/15" /><div className="absolute left-[48%] top-[35%] grid h-12 w-12 place-items-center rounded-full border-4 border-white bg-[#315c46] dark:bg-[#7fb894] text-xl text-white shadow-xl">⌂</div><div className="absolute left-[26%] top-[57%] grid h-9 w-9 place-items-center rounded-full border-4 border-white bg-[#d3a767] text-sm text-white shadow-lg">⌂</div><div className="absolute left-[71%] top-[23%] grid h-9 w-9 place-items-center rounded-full border-4 border-white bg-[#d3a767] text-sm text-white shadow-lg">⌂</div></div>
         </div>
       </section>
 

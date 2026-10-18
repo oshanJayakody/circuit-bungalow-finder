@@ -5,9 +5,11 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { safeHttpUrl } from "@/lib/urls";
 import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/lib/i18n";
 import SiteLogo from "@/components/SiteLogo";
 import PageNav from "@/components/PageNav";
 import BookmarkButton from "@/components/BookmarkButton";
+import SafeImage from "@/components/SafeImage";
 
 type Bungalow = {
   id: string;
@@ -92,6 +94,7 @@ export default function DestinationList({ town }: { town: string }) {
         </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <LanguageToggle />
           <PageNav />
         </div>
       </header>
@@ -122,13 +125,16 @@ export default function DestinationList({ town }: { town: string }) {
                   <article key={bungalow.id} className="group min-w-0">
                     <div className="relative mb-3 aspect-[1.13/1] overflow-hidden rounded-2xl bg-[#e9ece5] dark:bg-[#1d2b22]">
                       <Link href={`/bungalows/${bungalow.id}`} aria-label={`View ${bungalow.name} details`} className="absolute inset-0 z-0">
-                        {imageUrl ? (
-                          <img src={imageUrl} alt={bungalow.name} loading="lazy" decoding="async" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" />
-                        ) : (
-                          <div className={`grid h-full w-full place-items-center ${["bg-[#e7eee5]", "bg-[#eee8dd]", "bg-[#e4edf0]", "bg-[#ebe6ed]"][index % 4]} dark:bg-[#1d2b22]`}>
-                            <span className="text-5xl text-[#9aab9c]">⌂</span>
-                          </div>
-                        )}
+                        <SafeImage
+                          src={imageUrl}
+                          alt={bungalow.name}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+                          fallback={
+                            <div className={`grid h-full w-full place-items-center ${["bg-[#e7eee5]", "bg-[#eee8dd]", "bg-[#e4edf0]", "bg-[#ebe6ed]"][index % 4]} dark:bg-[#1d2b22]`}>
+                              <span className="text-5xl text-[#9aab9c]">⌂</span>
+                            </div>
+                          }
+                        />
                       </Link>
                       <span className="absolute left-3 top-3 rounded-full bg-white/90 px-3 py-1.5 text-[11px] font-bold text-[#34513f] backdrop-blur dark:bg-[#121a15]/90 dark:text-[#8fc39e]">Government stay</span>
                       <span className="absolute right-3 top-3"><BookmarkButton bungalowId={bungalow.id} initialSaved={savedIds.has(bungalow.id)} /></span>

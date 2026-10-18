@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/lib/i18n";
 import SiteLogo from "@/components/SiteLogo";
 import PageNav from "@/components/PageNav";
+import SafeImage from "@/components/SafeImage";
 
 type Contribution = { id: string; name: string; district: string; town: string; status: string; created_at: string };
 type Rank = { userId: string; count: number };
@@ -37,7 +39,7 @@ export default function ProfilePage() {
       setName(user.user_metadata?.full_name || user.user_metadata?.name || "Contributor");
 
       const [mineResult, approvedResult, pendingResult, rankingsResult, savedResult] = await Promise.all([
-        supabase.from("bungalows").select("id, name, district, town, status, created_at")
+        supabase.from("bungalows").select("id, name, district, town, status, created_at", { count: "exact" })
           .eq("submitted_by", user.id).order("created_at", { ascending: false }).limit(100),
         supabase.from("bungalows").select("id", { count: "exact", head: true })
           .eq("submitted_by", user.id).eq("status", "approved"),
@@ -87,7 +89,7 @@ export default function ProfilePage() {
 
   return (
     <main className="min-h-screen bg-[#fffefa] dark:bg-[#0b100e] text-[#23372f] dark:text-[#e9f1ea]">
-      <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><SiteLogo /><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><PageNav /></div></header>
+      <header className="mx-auto flex max-w-[1200px] items-center justify-between px-5 py-5 sm:px-9"><Link href="/" className="flex items-center gap-3"><SiteLogo /><span className="font-bold tracking-[-.04em]">Circuit Bungalow Finder</span></Link><div className="flex items-center gap-2"><ThemeToggle /><LanguageToggle /><PageNav /></div></header>
       <div className="mx-auto max-w-[1200px] px-5 pb-14 pt-8 sm:px-9 sm:pt-12">
         <p className="text-xs font-bold uppercase tracking-[.18em] text-[#8a9b8b] dark:text-[#8fa393]">Your account</p><h1 className="mt-2 text-3xl font-semibold tracking-[-.05em] sm:text-5xl">Welcome, {name || "Contributor"}</h1><p className="mt-3 text-sm text-[#718077] dark:text-[#9db0a2]">Keep track of the places you’ve shared with the community.</p>
         {message && !userId && <section className="mt-8 max-w-xl rounded-3xl border border-[#e8eae2] dark:border-[#223028] bg-white dark:bg-[#121a15] p-7"><p className="text-sm text-[#718077] dark:text-[#9db0a2]">{message}</p><Link href="/login" className="mt-5 inline-block rounded-full bg-[#244f3d] dark:bg-[#3d7a5c] px-5 py-3 text-sm font-semibold text-white">Log in</Link></section>}
@@ -106,7 +108,7 @@ export default function ProfilePage() {
                   <article key={item.bungalow_id} className="group overflow-hidden rounded-2xl border border-[#ecece5] dark:border-[#223028]">
                     <div className="relative aspect-[16/10] bg-[#e9ece5] dark:bg-[#1d2b22]">
                       <Link href={`/bungalows/${b.id}`} aria-label={`View ${b.name}`} className="absolute inset-0">
-                        {image ? <img src={image} alt={b.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" /> : <span className="grid h-full w-full place-items-center text-4xl text-[#9aab9c]">⌂</span>}
+                        <SafeImage src={image} alt={b.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]" fallback={<span className="grid h-full w-full place-items-center text-4xl text-[#9aab9c]">⌂</span>} />
                       </Link>
                       <button onClick={() => void removeSaved(b.id)} aria-label={`Remove ${b.name} from saved`} title="Remove from saved" className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-base text-[#244f3d] shadow-md backdrop-blur transition hover:scale-105 dark:bg-[#121a15]/90 dark:text-[#e9f1ea]"><span aria-hidden="true">♥</span></button>
                     </div>

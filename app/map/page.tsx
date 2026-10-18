@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import ThemeToggle from "@/components/ThemeToggle";
+import { LanguageToggle } from "@/lib/i18n";
 import SiteLogo from "@/components/SiteLogo";
 import PageNav from "@/components/PageNav";
 
@@ -117,6 +118,7 @@ export default function MapPage() {
         </Link>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <LanguageToggle />
           <PageNav />
         </div>
       </header>
